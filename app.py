@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
@@ -12,6 +12,10 @@ repositorio_asistencia = [
         "tipo": "ENTRADA"
     }
 ]
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/asistencia', methods=['GET'])
 def obtener_historial():
@@ -26,13 +30,13 @@ def registrar_marca():
 
     if not datos_recibidos or 'empleado_id' not in datos_recibidos or 'tipo' not in datos_recibidos:
         return jsonify({
-            "error": "Datos inválidos. Se requiere 'empleado_id' y 'tipo' (ENTRADA/SALIDA)."
+            "error": "Datos inválidos. Se requiere 'empleado_id' y 'tipo'."
         }), 400
 
     tipo_marca = datos_recibidos['tipo'].upper()
-    if tipo_marca not in ['ENTRADA', 'SALIDA']:
+    if tipo_marca not in ['ENTRADA', 'ALMUERZO', 'FIN_ALMUERZO', 'SALIDA']:
         return jsonify({
-            "error": "El tipo de asistencia debe ser 'ENTRADA' o 'SALIDA'."
+            "error": "El tipo de asistencia debe ser 'ENTRADA', 'ALMUERZO', 'FIN_ALMUERZO' o 'SALIDA'."
         }), 400
 
     ahora = datetime.now()
@@ -69,3 +73,4 @@ def eliminar_registro(registro_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
