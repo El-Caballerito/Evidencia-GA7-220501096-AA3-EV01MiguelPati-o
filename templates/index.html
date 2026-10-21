@@ -4,211 +4,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Asistencia</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
-    <link rel="stylesheet" href="https://jsdelivr.net">
     <style>
         :root {
             --purple-main: #5e35b1;
             --purple-light: #b39ddb;
             --green-accent: #64dd17;
-            --purple-dark: #3f1dcb;
+            --dark-bg: #212529;
         }
-        .bg-purple-main { background-color: var(--purple-main) !important; }
-        .text-purple-main { color: var(--purple-main) !important; }
-        .btn-green-accent {
-            background-color: var(--green-accent) !important;
-            color: #000000 !important;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: var(--purple-main);
+            color: #ffffff;
+            padding: 15px;
+            text-align: center;
             font-weight: bold;
-            border: none;
+            font-size: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-green-accent:hover { opacity: 0.9; }
-        .btn-purple-custom {
-            background-color: #673ab7 !important;
-            color: #ffffff !important;
-            font-weight: bold;
-        }
-        .btn-purple-custom:hover { background-color: var(--purple-main) !important; }
-        .sidebar {
-            background-color: var(--purple-light);
+        .main-container {
+            display: flex;
             min-height: calc(100vh - 56px);
         }
-        .sidebar .btn {
+        .sidebar {
+            width: 220px;
+            background-color: var(--purple-light);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .profile-zone {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .avatar-fallback {
+            width: 60px;
+            height: 60px;
+            background-color: #6c757d;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+        }
+        .sidebar .btn-nav {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
             background-color: #e0e0e0;
             color: #000000;
             border: 1px solid #cccccc;
-            margin-bottom: 12px;
+            border-radius: 4px;
+            text-align: left;
             font-weight: 500;
+            cursor: pointer;
         }
-        .sidebar .btn.active {
+        .sidebar .btn-nav.active {
             background-color: #ffffff;
             border-left: 5px solid var(--purple-main);
             font-weight: bold;
         }
+        .content-zone {
+            flex: 1;
+            padding: 30px;
+        }
+        .section-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        .section-header h4 {
+            color: var(--purple-main);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .section-header p {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            padding: 12px 20px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .card-header.purple { background-color: var(--purple-main); }
+        .card-header.dark { background-color: var(--dark-bg); }
+        .card-body { padding: 20px; }
         .geofence-circle {
-            width: 180px;
-            height: 180px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             background: rgba(100, 221, 23, 0.15);
             border: 3px dashed var(--green-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            position: relative;
+            margin: 20px auto;
         }
+        .geofence-circle.approved {
+            background: rgba(100, 221, 23, 0.3);
+            border: 3px solid var(--green-accent);
+        }
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .btn-purple { background-color: #673ab7; color: #ffffff; }
+        .btn-green { background-color: var(--green-accent); color: #000000; }
+        .btn-radio-group { display: flex; flex-direction: column; gap: 10px; margin: 15px 0 20px; }
+        .btn-radio { padding: 10px; border: 2px solid #dee2e6; border-radius: 4px; background: #fff; text-align: left; font-weight: bold; cursor: pointer; }
+        .btn-radio.selected { background-color: #212529; color: #ffffff; border-color: #212529; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; margin-top: 5px; margin-bottom: 15px; }
+        .alert { padding: 12px; border-radius: 4px; margin-top: 15px; font-size: 0.9rem; font-weight: 500; }
+        .alert-success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .alert-danger { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #f1f3f5; font-weight: bold; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: #fff; background-color: var(--purple-main); }
+        .btn-danger { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .text-center { text-align: center; }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <nav class="navbar bg-purple-main navbar-dark shadow-sm">
-        <div class="container-fluid">
-            <span class="navbar-brand mx-auto d-flex align-items-center fw-bold">
-                <i class="bi bi-clock-history me-2"></i> GROWTH - SISTEMA DE CONTROL DE ASISTENCIA
-            </span>
-        </div>
+    <nav class="navbar">
+        GROWTH - SISTEMA DE CONTROL DE ASISTENCIA
     </nav>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Menú Lateral -->
-            <div class="col-md-3 col-lg-2 sidebar py-4 px-3">
-                <div class="text-center mb-4">
-                    <i class="bi bi-person-circle fs-1 text-white bg-secondary rounded-circle px-1"></i>
-                    <p class="small text-white fw-bold mt-2 mb-0">Panel del Empleado</p>
+
+    <div class="main-container">
+        <!-- Barra Lateral -->
+        <div class="sidebar">
+            <div class="profile-zone">
+                <div class="avatar-fallback"></div>
+                <p>Panel del Empleado</p>
+            </div>
+            <button class="btn-nav active" id="btnNavAsistencia" onclick="cambiarSeccion('asistencia')">Marcación GPS</button>
+            <button class="btn-nav" id="btnNavHistorial" onclick="cambiarSeccion('historial')">Mi Historial</button>
+        </div>
+
+        <div class="content-zone">
+            
+    
+            <div id="seccionGeocerca">
+                <div class="section-header">
+                    <h4>Ubicación y Validación por GPS</h4>
+                    <p>Requerimiento obligatorio: El sistema debe verificar que se encuentra dentro del perímetro antes de habilitar el registro.</p>
                 </div>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-light text-start active" id="btnNavAsistencia" onclick="cambiarSeccion('asistencia')"><i class="bi bi-geo-alt-fill me-2"></i> Marcación GPS</button>
-                    <button class="btn btn-light text-start" id="btnNavHistorial" onclick="cambiarSeccion('historial')"><i class="bi bi-calendar3 me-2"></i> Mi Historial</button>
+                <div style="max-width: 500px; margin: 0 auto;">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="geofence-circle" id="radarGps">
+                                <span style="font-size: 2.5rem;">📍</span>
+                            </div>
+                            <h5 style="margin-bottom: 10px; font-weight: bold;" id="txtEstadoGps">Verificando coordenadas GPS...</h5>
+                            <p style="color: #6c757d; font-size: 0.85rem; margin-bottom: 20px;" id="txtDetalleGps">El sistema está rastreando su señal de posicionamiento en tiempo real.</p>
+                            <button class="btn-action btn-purple" id="btnValidarUbicacion" onclick="simularAprobacionGps()">Validar Mi Ubicación</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="seccionRegistro" style="display: none;">
+                <div class="section-header">
+                    <h4 style="color: #198754;">✓ Módulo de Marcación Habilitado</h4>
+                    <p>Ubicación confirmada dentro del perímetro permitido de la empresa.</p>
+                </div>
+                <div style="max-width: 450px; margin: 0 auto;">
+                    <div class="card">
+                        <div class="card-header purple">Nueva Marcación Digital</div>
+                        <div class="card-body">
+                            <form id="formAsistencia">
+                                <label style="font-weight: bold;">ID del Empleado:</label>
+                                <input type="text" class="form-control" id="empleadoId" placeholder="Ej: EMP-1020" required>
+                                
+                                <label style="font-weight: bold;">Tipo de Evento:</label>
+                                <div class="btn-radio-group">
+                                    <button type="button" class="btn-radio" onclick="seleccionarEvento('ENTRADA', this)">→ ENTRADA (Inicio de jornada)</button>
+                                    <button type="button" class="btn-radio" onclick="seleccionarEvento('ALMUERZO', this)">☕ ALMUERZO (Inicio de descanso)</button>
+                                    <button type="button" class="btn-radio" onclick="seleccionarEvento('FIN_ALMUERZO', this)">✓ FIN ALMUERZO (Regreso al turno)</button>
+                                    <button type="button" class="btn-radio" onclick="seleccionarEvento('SALIDA', this)">← SALIDA (Fin de jornada)</button>
+                                </div>
+                                <input type="hidden" id="tipoMarca" required>
+                                
+                                <button type="submit" class="btn-action btn-green" id="btnEnviarRegistro" disabled>Ingresar Registro</button>
+                            </form>
+                            <div id="zonaAlertas"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Contenido Principal -->
-            <div class="col-md-9 col-lg-10 py-4 px-4">
-                
-                <!-- SECCIÓN 1: INTERFAZ DE GEOCERCADO Y VALIDACIÓN GPS -->
-                <div id="seccionGeocerca">
-                    <div class="row mb-4">
-                        <div class="col-12 border-bottom pb-2">
-                            <h4 class="text-purple-main fw-bold mb-0">Ubicación y Validación por GPS</h4>
-                            <p class="text-muted small">Requerimiento obligatorio: El sistema debe verificar que se encuentra dentro del perímetro antes de habilitar los botones de registro.</p>
-                        </div>
+            <div id="seccionHistorial" style="display: none;">
+                <div class="section-header">
+                    <h4>Historial de Horas</h4>
+                    <p>Visualización y auditoría transparente de sus marcas realizadas.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header dark" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Registro de Marcas Realizadas</span>
+                        <button style="padding: 4px 10px; background: transparent; color: white; border: 1px solid white; border-radius: 4px; cursor: pointer;" onclick="cargarHistorial()">Actualizar</button>
                     </div>
-
-                    <div class="row justify-content-center">
-                        <div class="col-md-6 text-center">
-                            <div class="card shadow-sm border-0 mb-4">
-                                <div class="card-body py-5">
-                                    <div class="geofence-circle mb-4" id="radarGps">
-                                        <i class="bi bi-geo-fill text-purple-main fs-1"></i>
-                                    </div>
-                                    <h5 class="fw-bold mb-2" id="txtEstadoGps">Verificando coordenadas GPS...</h5>
-                                    <p class="text-muted small px-3" id="txtDetalleGps">El sistema está rastreando su señal de posicionamiento satelital en tiempo real.</p>
-                                    
-                                    <!-- Botón para simular la aprobación del perímetro -->
-                                    <button class="btn btn-purple-custom px-4" id="btnValidarUbicacion" onclick="simularAprobacionGps()">
-                                        <i class="bi bi-shield-check me-2"></i> Validar Mi Ubicación
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>ID Empleado</th>
+                                        <th>Fecha</th>
+                                        <th>Tipo de evento</th>
+                                        <th>Hora exacta</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaAsistencia">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <!-- SECCIÓN 2: FORMULARIO DE REGISTRO DE ASISTENCIA (INTERFAZ DESBLOQUEADA) -->
-                <div id="seccionRegistro" style="display: none;">
-                    <div class="row mb-4">
-                        <div class="col-12 border-bottom pb-2">
-                            <h4 class="text-success fw-bold mb-0"><i class="bi bi-unlock-fill"></i> Módulo de Marcación Habilitado</h4>
-                            <p class="text-muted small">Ubicación confirmada dentro del perímetro permitido de la empresa.</p>
-                        </div>
-                    </div>
+            </div>
 
-                    <div class="row g-4 justify-content-center">
-                        <div class="col-md-5">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-header bg-purple-main text-white fw-bold">
-                                    <i class="bi bi-qr-code-scan"></i> Nueva Marcación Digital
-                                </div>
-                                <div class="card-body">
-                                    <form id="formAsistencia">
-                                        <div class="mb-3">
-                                            <label for="empleadoId" class="form-label fw-semibold">ID del Empleado:</label>
-                                            <input type="text" class="form-control" id="empleadoId" placeholder="Ej: EMP-1020" required>
-                                        </div>
-                                        <div class="mb-4">
-                                            <label class="form-label fw-semibold">Tipo de Evento:</label>
-                                            <!-- Botonera adaptada para capturar las opciones de asistencia reales -->
-                                            <div class="d-grid gap-2">
-                                                <button type="button" class="btn btn-outline-primary text-start fw-bold py-2" onclick="seleccionarEvento('ENTRADA', this)">
-                                                    <i class="bi bi-box-arrow-in-right me-2"></i> ENTRADA (Inicio de jornada)
-                                                </button>
-                                                <button type="button" class="btn btn-outline-warning text-start text-dark fw-bold py-2" onclick="seleccionarEvento('ALMUERZO', this)">
-                                                    <i class="bi bi-cup-hot-fill me-2"></i> ALMUERZO (Inicio de descanso)
-                                                </button>
-                                                <button type="button" class="btn btn-outline-info text-start fw-bold py-2" onclick="seleccionarEvento('FIN_ALMUERZO', this)">
-                                                    <i class="bi bi-check-all me-2"></i> FIN ALMUERZO (Regreso al turno)
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger text-start fw-bold py-2" onclick="seleccionarEvento('SALIDA', this)">
-                                                    <i class="bi bi-box-arrow-left me-2"></i> SALIDA (Fin de jornada)
-                                                </button>
-                                            </div>
-                                            <!-- Campo de control invisible para enviar la selección al backend -->
-                                            <input type="hidden" id="tipoMarca" required>
-                                        </div>
-                                        
-                                        <button type="submit" class="btn btn-green-accent w-100 py-2 fs-5" id="btnEnviarRegistro" disabled>
-                                            Ingresar Registro
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div id="zonaAlertas" class="mt-3"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- SECCIÓN 3: INTERFAZ DE HISTORIAL DE REGISTROS -->
-                <div id="seccionHistorial" style="display: none;">
-                    <div class="row mb-4">
-                        <div class="col-12 border-bottom pb-2">
-                            <h4 class="text-purple-main fw-bold mb-0">Historial de Horas</h4>
-                            <p class="text-muted small">Visualización y auditoría transparente de sus marcas realizadas.</p>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-list-check"></i> Registro de Marcas Realizadas</span>
-                            <button class="btn btn-sm btn-outline-light" onclick="cargarHistorial()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>ID Empleado</th>
-                                            <th>Fecha</th>
-                                            <th>Tipo de evento</th>
-                                            <th>Hora exacta</th>
-                                            <th>Estado</th>
-                                            <th class="text-center">Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaAsistencia">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div> <!-- Cierre Contenido Principal -->
-        </div> <!-- Cierre Row -->
-    </div> <!-- Cierre Container Fluid -->
-
+        </div> 
+    </div> 
     <script>
         const API_URL = '/asistencia';
 
-        // Lógica para cambiar entre las interfaces de la barra lateral
         function cambiarSeccion(seccion) {
             const btnAsistencia = document.getElementById('btnNavAsistencia');
             const btnHistorial = document.getElementById('btnNavHistorial');
@@ -217,7 +262,6 @@
                 btnAsistencia.classList.add('active');
                 btnHistorial.classList.remove('active');
                 document.getElementById('seccionHistorial').style.display = 'none';
-                // Si ya fue aprobado el GPS, regresa al formulario; si no, al radar
                 if (document.getElementById('txtEstadoGps').innerText.includes('Aprobado')) {
                     document.getElementById('seccionRegistro').style.display = 'block';
                 } else {
@@ -233,7 +277,6 @@
             }
         }
 
-        // Simulación interactiva del Geocercado por GPS
         function simularAprobacionGps() {
             const radar = document.getElementById('radarGps');
             const estado = document.getElementById('txtEstadoGps');
@@ -244,34 +287,28 @@
             estado.innerText = "Calculando geocerca...";
 
             setTimeout(() => {
-                radar.style.background = "rgba(100, 221, 23, 0.3)";
-                radar.style.border = "3px solid var(--green-accent)";
-                radar.innerHTML = '<i class="bi bi-shield-fill-check text-success fs-1"></i>';
-                estado.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Acceso Aprobado</span>';
-                detalle.innerText = "Ubicación válida confirmada: Se encuentra dentro del perímetro permitido de la oficina.";
+                radar.classList.add('approved');
+                radar.innerHTML = '<span style="font-size: 2.5rem;">✅</span>';
+                estado.innerHTML = '<span style="color: #198754;">Acceso Aprobado</span>';
+                detalle.innerText = "Ubicación válida confirmada: Se encuentra dentro del perímetro de la oficina.";
                 
-                // Transición automática a la Interfaz de Registro después de 1.5 segundos
                 setTimeout(() => {
                     document.getElementById('seccionGeocerca').style.display = 'none';
                     document.getElementById('seccionRegistro').style.display = 'block';
-                }, 1500);
-            }, 1200);
+                }, 1200);
+            }, 1000);
         }
 
-        // Selección visual del botón de evento (Entrada, Almuerzo, Salida)
         function seleccionarEvento(tipo, elemento) {
             document.getElementById('tipoMarca').value = tipo;
             document.getElementById('btnEnviarRegistro').disabled = false;
             
-            // Remover estilos de selección activa de todos los botones de la lista
-            elemento.parentNode.querySelectorAll('.btn').forEach(btn => {
-                btn.classList.remove('bg-dark', 'text-white');
+            elemento.parentNode.querySelectorAll('.btn-radio').forEach(btn => {
+                btn.classList.remove('selected');
             });
-            // Marcar visualmente el botón seleccionado
-            elemento.classList.add('bg-dark', 'text-white');
+            elemento.classList.add('selected');
         }
 
-        // Conexión con Backend: Cargar Historial (GET)
         async function cargarHistorial() {
             try {
                 const respuesta = await fetch(API_URL);
@@ -285,13 +322,11 @@
                             <td><strong>#${reg.id}</strong></td>
                             <td>${reg.empleado_id}</td>
                             <td>${reg.fecha}</td>
-                            <td><span class="badge bg-purple-main">${reg.tipo}</span></td>
+                            <td><span class="badge">${reg.tipo}</span></td>
                             <td>${reg.hora}</td>
-                            <td><span class="badge bg-success">Normal</span></td>
+                            <td><span style="color: #198754; font-weight: bold; font-size: 0.85rem;">Normal</span></td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-danger px-2 py-0" onclick="eliminarRegistro(${reg.id})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <button class="btn-danger" onclick="eliminarRegistro(${reg.id})">Eliminar</button>
                             </td>
                         </tr>
                     `;
@@ -301,7 +336,6 @@
             }
         }
 
-        // Conexión con Backend: Enviar Registro (POST)
         document.getElementById('formAsistencia').addEventListener('submit', async (e) => {
             e.preventDefault();
             const empleado_id = document.getElementById('empleadoId').value.trim();
@@ -318,29 +352,20 @@
                 const resultado = await respuesta.json();
 
                 if (respuesta.status === 201) {
-                    alertaZona.innerHTML = `
-                        <div class="alert alert-success alert-dismissible fade show small" role="alert">
-                            <i class="bi bi-check-circle-fill"></i> ${resultado.mensaje}
-                        </div>`;
+                    alertaZona.innerHTML = `<div class="alert alert-success">✓ ${resultado.mensaje}</div>`;
                     document.getElementById('formAsistencia').reset();
                     document.getElementById('btnEnviarRegistro').disabled = true;
-                    // Limpiar selección de botones
-                    document.getElementById('tipoMarca').parentNode.querySelectorAll('.btn').forEach(b => b.classList.remove('bg-dark', 'text-white'));
+                    document.getElementById('tipoMarca').parentNode.querySelectorAll('.btn-radio').forEach(b => b.classList.remove('selected'));
                     
-                    // Redirigir automáticamente a la vista de historial para ver la marca reflejada
                     setTimeout(() => cambiarSeccion('historial'), 1000);
                 } else {
-                    alertaZona.innerHTML = `
-                        <div class="alert alert-danger alert-dismissible fade show small" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill"></i> ${resultado.error}
-                        </div>`;
+                    alertaZona.innerHTML = `<div class="alert alert-danger">✗ ${resultado.error}</div>`;
                 }
             } catch (error) {
-                alertaZona.innerHTML = `<div class="alert alert-danger small">Error de conexión.</div>`;
+                alertaZona.innerHTML = `<div class="alert alert-danger">Error de conexión.</div>`;
             }
         });
 
-        // Conexión con Backend: Eliminar Registro (DELETE)
         async function eliminarRegistro(id) {
             if (!confirm(`¿Desea eliminar el registro #${id}?`)) return;
 
@@ -358,4 +383,3 @@
     </script>
 </body>
 </html>
-EOF
